@@ -1,17 +1,41 @@
 package br.uff.assinador;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import br.uff.assinador.dao.DaoMaster;
+import br.uff.assinador.dao.DaoSession;
+import br.uff.assinador.dao.DocumentoDao;
+import br.uff.assinador.dao.UsuarioDao;
+import br.uff.assinador.service.DocumentoService;
+import br.uff.assinador.service.UsuarioService;
+
 
 public class MainActivity extends ActionBarActivity {
+
+    private SQLiteDatabase db;
+    private DaoMaster daoMaster;
+    private DaoSession daoSession;
+    private UsuarioService usuarioService;
+    private DocumentoService documentoService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //criação do banco de dados
+        DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "documentos-db", null);
+        db = helper.getWritableDatabase();
+
+        //criação dos DAOs e Services
+        daoMaster = new DaoMaster(db);
+        daoSession = daoMaster.newSession();
+        usuarioService = new UsuarioService(daoSession);
+        documentoService = new DocumentoService(daoSession);
     }
 
     @Override

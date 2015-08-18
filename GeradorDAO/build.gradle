@@ -5,7 +5,7 @@ sourceCompatibility = 1.5
 version = '1.0'
 jar {
     manifest {
-        attributes 'Implementation-Title': 'Gradle Quickstart',
+        attributes 'Implementation-Title': 'GeradorDAO',
                    'Implementation-Version': version
     }
 }
@@ -15,18 +15,6 @@ repositories {
 }
 
 dependencies {
-    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
-    testCompile group: 'junit', name: 'junit', version: '4.+'
-}
-
-test {
-    systemProperties 'property': 'value'
-}
-
-uploadArchives {
-    repositories {
-       flatDir {
-           dirs 'repos'
-       }
-    }
+    compile group: 'de.greenrobot', name: 'greendao', version: '2.0.0'
+    compile group: 'de.greenrobot', name: 'greendao-generator', version: '2.0.0'
 }
