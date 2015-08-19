@@ -1,5 +1,7 @@
 package br.uff.assinador.daoservice;
 
+import javax.inject.Inject;
+
 import br.uff.assinador.dao.DaoSession;
 import br.uff.assinador.dao.DocumentoDao;
 
@@ -8,9 +10,10 @@ import br.uff.assinador.dao.DocumentoDao;
  */
 public class DocumentoDaoService {
 
-    private DocumentoDao documentoDao;
+    private final DocumentoDao documentoDao;
 
-    public DocumentoDaoService(DaoSession daoSession) {
-        documentoDao = daoSession.getDocumentoDao();
+    @Inject
+    public DocumentoDaoService(DocumentoDao documentoDao) {
+        this.documentoDao = documentoDao;
     }
 }
