@@ -10,7 +10,7 @@ import br.uff.assinador.dao.DocumentoDao;
  */
 public class DocumentoDaoService {
 
-    private final DocumentoDao documentoDao;
+    private DocumentoDao documentoDao;
 
     @Inject
     public DocumentoDaoService(DocumentoDao documentoDao) {

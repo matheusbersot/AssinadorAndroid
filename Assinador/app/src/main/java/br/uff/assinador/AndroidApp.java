@@ -11,6 +11,7 @@ import br.uff.assinador.dao.DaoMaster;
 import br.uff.assinador.di.component.ApplicationComponent;
 import br.uff.assinador.di.component.DaggerApplicationComponent;
 import br.uff.assinador.di.module.ApplicationModule;
+import br.uff.assinador.visao.MainActivity;
 
 /**
  * Created by matheus on 19/08/15.
@@ -30,7 +31,7 @@ public class AndroidApp extends Application {
 
     private void initializeInjector() {
 
-        //criação do banco de dados em um tarefa assíncrona
+        //criação do banco de dados em uma tarefa assíncrona
         //recomendação do tutorial de desenvolvimento Android
         // (http://developer.android.com/training/basics/data-storage/databases.html)
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, "documentos-db", null);
@@ -54,10 +55,27 @@ public class AndroidApp extends Application {
         this.applicationComponent = DaggerApplicationComponent.builder()
                 .applicationModule(new ApplicationModule(db))
                 .build();
+
+        this.onTerminate();
     }
 
     public ApplicationComponent getApplicationComponent() {
         return this.applicationComponent;
     }
 
+    public void closeDB()
+    {
+        //destruir tarefa assíncrona
+        if (databaseTask != null) {
+            databaseTask.cancel(true);
+            databaseTask = null;
+        }
+
+        //fechar instância do banco antes de destruir o app
+        if(db != null)
+        {
+            db.close();
+            db = null;
+        }
+    }
 }

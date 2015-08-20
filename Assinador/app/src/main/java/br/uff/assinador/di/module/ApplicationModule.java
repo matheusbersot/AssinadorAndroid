@@ -40,12 +40,12 @@ public class ApplicationModule {
     }
 
     @Provides @Singleton
-    UsuarioDaoService provideUsuarioDaoService() {
-        return new UsuarioDaoService(daoSession.getUsuarioDao());
+    UsuarioDaoService provideUsuarioDaoService(UsuarioDao usuarioDao) {
+        return new UsuarioDaoService(usuarioDao);
     }
 
     @Provides @Singleton
-    DocumentoDaoService provideDocumentoDaoService() {
-        return new DocumentoDaoService(daoSession.getDocumentoDao());
+    DocumentoDaoService provideDocumentoDaoService(DocumentoDao documentoDao) {
+        return new DocumentoDaoService(documentoDao);
     }
 }

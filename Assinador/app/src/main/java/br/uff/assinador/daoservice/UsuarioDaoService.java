@@ -10,12 +10,10 @@ import br.uff.assinador.dao.UsuarioDao;
  */
 public class UsuarioDaoService {
 
-    private final UsuarioDao usuarioDao;
+    private UsuarioDao usuarioDao;
 
     @Inject
-    public UsuarioDaoService(UsuarioDao usuarioDao) {
+    public UsuarioDaoService (UsuarioDao usuarioDao) {
         this.usuarioDao = usuarioDao;
     }
-
-
 }

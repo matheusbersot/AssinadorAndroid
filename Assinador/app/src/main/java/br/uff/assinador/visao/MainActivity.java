@@ -1,26 +1,33 @@
-package br.uff.assinador;
+package br.uff.assinador.visao;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import javax.inject.Inject;
 
+import br.uff.assinador.AndroidApp;
+import br.uff.assinador.R;
 import br.uff.assinador.daoservice.DocumentoDaoService;
 import br.uff.assinador.daoservice.UsuarioDaoService;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends BaseActivity {
 
-    protected @Inject UsuarioDaoService usuarioDaoService;
-    protected @Inject DocumentoDaoService documentoDaoService;
+    @Inject
+    UsuarioDaoService usuarioDaoService;
+    @Inject
+    DocumentoDaoService documentoDaoService;
+
     private static final String TAG = MainActivity.class.getName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        this.getApplicationComponent().inject(this);
+        Log.i(TAG, String.valueOf(documentoDaoService != null));
     }
 
     @Override
@@ -45,21 +52,10 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /*@Override
+    //Só foi colocado aqui, pois se a MainActivity for destruída, significa que toda a aplicação foi também.
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        //destruir tarefa assíncrona
-        if (databaseTask != null) {
-            databaseTask.cancel(true);
-            databaseTask = null;
-        }
-
-        //fechar instância do banco antes de destruir o app
-        if(db != null)
-        {
-            db.close();
-            db = null;
-        }
-    }*/
+        ((AndroidApp)getApplication()).closeDB();
+    }
 }
