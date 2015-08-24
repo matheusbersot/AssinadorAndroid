@@ -11,7 +11,7 @@ import de.greenrobot.daogenerator.ToMany;
 public class GeradorDAOPrincipal {
 
 	public static void main(String[] args) throws IOException, Exception {
-		Schema schema = new Schema(1000, "br.uff.assinador");
+		Schema schema = new Schema(1001, "br.uff.assinador");
 
 		adicionaUsuarioDocumento(schema);
 
