@@ -45,7 +45,7 @@ public class ApplicationModule {
     }
 
     @Provides @Singleton
-    DocumentoDaoService provideDocumentoDaoService(DocumentoDao documentoDao) {
-        return new DocumentoDaoService(documentoDao);
+    DocumentoDaoService provideDocumentoDaoService(DocumentoDao documentoDao, UsuarioDaoService usuarioDaoService) {
+        return new DocumentoDaoService(documentoDao, usuarioDaoService);
     }
 }

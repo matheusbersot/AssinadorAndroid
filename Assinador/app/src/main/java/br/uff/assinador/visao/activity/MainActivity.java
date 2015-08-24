@@ -5,12 +5,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
+import java.util.List;
+
 import javax.inject.Inject;
 
 import br.uff.assinador.AndroidApp;
 import br.uff.assinador.R;
 import br.uff.assinador.daoservice.DocumentoDaoService;
 import br.uff.assinador.daoservice.UsuarioDaoService;
+import br.uff.assinador.modelo.Documento;
+import br.uff.assinador.visao.adapter.DocumentoArrayAdapter;
 
 
 public class MainActivity extends BaseActivity {
@@ -33,7 +37,38 @@ public class MainActivity extends BaseActivity {
         //Preenche listView com documentos
         final ListView listview = (ListView) findViewById(R.id.listView);
 
-        listview.setAdapter();
+        //Define adapter para o ListView
+        List<Documento> listaDocumentos = null;
+        try {
+            listaDocumentos = documentoDaoService.obterDocumentosPorUsuario("11232299707");
+        } catch (Exception e) {
+            //e.printStackTrace();
+            usuarioDaoService.adicionarUsuario("11232299707");
+        }
+        final DocumentoArrayAdapter adapter = new DocumentoArrayAdapter(this,R.layout.item_doc_lista_layout,listaDocumentos);
+        listview.setAdapter(adapter);
+
+        /*
+        //Define evento de clique em um item da lista
+
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, final View view,
+                                    int position, long id) {
+                final String item = (String) parent.getItemAtPosition(position);
+                view.animate().setDuration(2000).alpha(0)
+                        .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                list.remove(item);
+                                adapter.notifyDataSetChanged();
+                                view.setAlpha(1);
+                            }
+                        });
+            }
+
+        });*/
 
     }
 
@@ -52,17 +87,39 @@ public class MainActivity extends BaseActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_search:
+                return true;
+            case R.id.action_settings:
+                return true;
+            case R.id.action_add_user:
+                adicionarUsuario();
+                return true;
+            case R.id.action_add_doc:
+                adicionarDocumento();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
+    }
 
-        return super.onOptionsItemSelected(item);
+    private void adicionarUsuario() {
+        usuarioDaoService.adicionarUsuario("11232299707");
+    }
+
+    private void adicionarDocumento() {
+
+        try {
+            documentoDaoService.adicionarDocumentoPorUsuario("11232299707");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     //Só foi colocado aqui, pois se a MainActivity for destruída, significa que toda a aplicação foi também.
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ((AndroidApp)getApplication()).closeDB();
+        ((AndroidApp) getApplication()).closeDB();
     }
 }

@@ -1,14 +1,11 @@
 package br.uff.assinador.di.component;
 
-import android.app.Activity;
-
 import javax.inject.Singleton;
 
 import br.uff.assinador.daoservice.DocumentoDaoService;
 import br.uff.assinador.daoservice.UsuarioDaoService;
 import br.uff.assinador.di.module.ApplicationModule;
-import br.uff.assinador.visao.BaseActivity;
-import br.uff.assinador.visao.MainActivity;
+import br.uff.assinador.visao.activity.MainActivity;
 import dagger.Component;
 
 /**

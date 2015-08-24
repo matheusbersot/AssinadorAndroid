@@ -11,7 +11,7 @@ import br.uff.assinador.dao.DaoMaster;
 import br.uff.assinador.di.component.ApplicationComponent;
 import br.uff.assinador.di.component.DaggerApplicationComponent;
 import br.uff.assinador.di.module.ApplicationModule;
-import br.uff.assinador.visao.MainActivity;
+import br.uff.assinador.visao.activity.MainActivity;
 
 /**
  * Created by matheus on 19/08/15.

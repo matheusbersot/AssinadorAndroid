@@ -1,6 +1,12 @@
 <resources>
     <string name="app_name">Assinador</string>
+    <string name="documento">Documento</string>
+    <string name="descricao">Descrição</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <!-- Itens do Menu -->
+    <string name="action_settings">Configurações</string>
+    <string name="action_search">Procurar</string>
+    <string name="action_add_user">Adicionar Usuário</string>
+    <string name="action_add_doc">Adicionar Documento</string>
+
 </resources>
