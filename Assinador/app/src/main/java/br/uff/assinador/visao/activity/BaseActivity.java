@@ -1,4 +1,4 @@
-package br.uff.assinador.visao;
+package br.uff.assinador.visao.activity;
 
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;

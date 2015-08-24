@@ -1,9 +1,9 @@
-package br.uff.assinador.visao;
+package br.uff.assinador.visao.activity;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 
 import javax.inject.Inject;
 
@@ -26,8 +26,15 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Injeta dependências com a anotação @Inject nesta classe
         this.getApplicationComponent().inject(this);
-        Log.i(TAG, String.valueOf(documentoDaoService != null));
+
+        //Preenche listView com documentos
+        final ListView listview = (ListView) findViewById(R.id.listView);
+
+        listview.setAdapter();
+
     }
 
     @Override

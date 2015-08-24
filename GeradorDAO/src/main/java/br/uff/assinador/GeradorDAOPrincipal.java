@@ -30,9 +30,10 @@ public class GeradorDAOPrincipal {
         documento.addIdProperty();
         documento.addStringProperty("nome").notNull();
         documento.addStringProperty("tipo").notNull();
+        documento.addStringProperty("descricao").notNull();
         documento.addByteArrayProperty("arquivo").notNull();        
         documento.addByteArrayProperty("assinatura");
-        documento.addByteArrayProperty("tipo_assinatura");        
+        documento.addStringProperty("tipo_assinatura");
         Property dataRecebimento = documento.addDateProperty("data").getProperty();
         
         //adicionando chave estrangeira na tabela documento
