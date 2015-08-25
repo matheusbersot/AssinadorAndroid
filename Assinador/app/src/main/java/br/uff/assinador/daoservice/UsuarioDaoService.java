@@ -22,8 +22,8 @@ public class UsuarioDaoService {
         this.usuarioDao = usuarioDao;
     }
 
-    public Usuario obterUsuarioPorIdentificador(String cpf) throws Exception {
-        List<Usuario> lista = usuarioDao.queryBuilder().where(UsuarioDao.Properties.Cpf.eq(cpf)).list();
+    public Usuario obterUsuarioPorIdentificador(String identificadorUsuario) throws Exception {
+        List<Usuario> lista = usuarioDao.queryBuilder().where(UsuarioDao.Properties.Cpf.eq(identificadorUsuario)).list();
         if(lista.isEmpty()) {
             throw new Exception(Util.Constantes.MSG_USUARIO_NAO_ENCONTRADO);
         }
@@ -31,8 +31,8 @@ public class UsuarioDaoService {
         return lista.get(0);
     }
 
-    public void adicionarUsuario(String cpf){
-        Usuario usuario = new Usuario(null, cpf);
+    public void adicionarUsuario(String identificadorUsuario){
+        Usuario usuario = new Usuario(null, identificadorUsuario);
         usuarioDao.insert(usuario);
         Log.d("UsuarioDaoService", "Inseriu novo usuário, ID: " + usuario.getId());
     }

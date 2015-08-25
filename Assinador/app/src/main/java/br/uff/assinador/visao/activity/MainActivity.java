@@ -20,14 +20,18 @@ import br.uff.assinador.daoservice.UsuarioDaoService;
 import br.uff.assinador.modelo.Documento;
 import br.uff.assinador.util.Util;
 import br.uff.assinador.visao.adapter.DocumentoArrayAdapter;
+import br.uff.assinador.visao.presenter.IMainView;
+import br.uff.assinador.visao.presenter.MainPresenter;
 
 
-public class MainActivity extends BaseActivity {
+public class MainActivity extends BaseActivity implements IMainView {
 
     @Inject
     UsuarioDaoService usuarioDaoService;
     @Inject
     DocumentoDaoService documentoDaoService;
+
+    MainPresenter mainPresenter;
 
     private static final String TAG = MainActivity.class.getName();
 
@@ -38,47 +42,11 @@ public class MainActivity extends BaseActivity {
 
         //Injeta dependências com a anotação @Inject nesta classe
         this.getApplicationComponent().inject(this);
+        mainPresenter = new MainPresenter(this);
+        this.getApplicationComponent().inject(mainPresenter);
 
         //Preenche listView com documentos
-        final ListView listview = (ListView) findViewById(R.id.listView);
-
-        //Define adapter para o ListView
-        List<Documento> listaDocumentos = null;
-        try {
-            listaDocumentos = documentoDaoService.obterDocumentosPorUsuario("11232299707");
-        } catch (Exception e) {
-            //e.printStackTrace();
-            usuarioDaoService.adicionarUsuario("11232299707");
-        }
-        final DocumentoArrayAdapter adapter = new DocumentoArrayAdapter(this,R.layout.item_doc_lista_layout,listaDocumentos);
-        listview.setAdapter(adapter);
-
-
-        //Define evento de clique em um item da lista
-
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-
-                //obtém o documento escolhido
-                final Documento item = (Documento) parent.getItemAtPosition(position);
-
-                //grava o arquivo temporariamente no storage externo
-                Util.Armazenamento.criarArquivo(item.getNome(), item.getArquivo());
-
-                //Obtém URI do arquivo
-                Uri uriArquivo =  Util.Armazenamento.obterUriArquivo(item.getNome());
-
-                //Visualiza qualquer tipo de arquivo, pois será indicado pelo android um programa para abrir o arquivo
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(uriArquivo, item.getTipo());
-                startActivity(intent);
-            }
-
-        });
-
+        mainPresenter.preencherListaDocumentos("11232299707");
     }
 
     @Override
@@ -130,5 +98,42 @@ public class MainActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         ((AndroidApp) getApplication()).closeDB();
+    }
+
+    @Override
+    public void setListaDocumentos(List<Documento> listaDocumentos) {
+
+        //obtém componente ListView da interface
+        final ListView listview = (ListView) findViewById(R.id.listView);
+
+        // define um adapter para esse componente
+        // através do adapter é que os documentos serão inseridos no componente ListView
+        final DocumentoArrayAdapter adapter = new DocumentoArrayAdapter(this, R.layout.item_doc_lista_layout,listaDocumentos);
+        listview.setAdapter(adapter);
+
+        //Define evento de clique em um item da lista
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+
+                //obtém o documento escolhido
+                final Documento item = (Documento) parent.getItemAtPosition(position);
+
+                //grava o arquivo temporariamente no storage externo
+                Util.Armazenamento.criarArquivo(getExternalFilesDir(null),item.getNome(), item.getArquivo());
+
+                //Obtém URI do arquivo
+                Uri uriArquivo = Util.Armazenamento.obterUriArquivo(getExternalFilesDir(null),item.getNome());
+
+                //Visualiza qualquer tipo de arquivo, pois será indicado pelo android um programa para abrir o arquivo
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(uriArquivo, item.getTipo());
+                startActivity(intent);
+            }
+
+        });
+
     }
 }

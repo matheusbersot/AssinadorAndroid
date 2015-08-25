@@ -14,12 +14,12 @@ import java.io.IOException;
  */
 public class Util {
 
-    public static class Constantes{
+    public static class Constantes {
         public static final String MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
         public static final String CAMINHO_ARQUIVOS = "/storage/extSdCard/";
     }
 
-    public static class Armazenamento{
+    public static class Armazenamento {
 
         /* Verifica se o armazenamento externo está disponível pelo menos para leitura*/
         public static boolean isExternalStorageReadable() {
@@ -40,36 +40,38 @@ public class Util {
             return false;
         }
 
-        public static Uri obterUriArquivo(String nomeArquivo)
-        {
-            File arquivo = new File(Constantes.CAMINHO_ARQUIVOS+nomeArquivo);
-            Uri caminho = Uri.fromFile(arquivo);
-            return caminho;
+        public static Uri obterUriArquivo(File caminho, String nomeArquivo) {
+            File arquivo = new File(caminho,nomeArquivo);
+            Uri uri = Uri.fromFile(arquivo);
+            return uri;
         }
 
-        public static void criarArquivo(String nomeArquivo, byte[] dados)
-        {
+        public static void criarArquivo(File caminho, String nomeArquivo, byte[] dados) {
             System.out.println("isExternalStorageWritable: " + isExternalStorageWritable());
 
-            if(!isExternalStorageWritable()){
+            if (!isExternalStorageWritable()) {
                 //TODO: Abrir um dialog informando que o storage externo não está montado.
                 //pensar melhor e ver se vale a pena armazenar no storage interno e ver os cuidados a serem tomados
             }
 
-            // Get the absolute path of External Storage Directory
-            File arquivo = new File(Constantes.CAMINHO_ARQUIVOS+nomeArquivo);
+            File arquivo = new File(caminho,nomeArquivo);
+
+            // se arquivo não existir, então cria ele
             FileOutputStream out = null;
-            try {
-                out = new FileOutputStream(arquivo);
-                out.write(dados);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+            if (!arquivo.exists()) {
+                try {
+                    arquivo.createNewFile();
+                    out = new FileOutputStream(arquivo);
+                    out.write(dados);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (out != null) {
+                        try {
+                            out.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -78,13 +80,13 @@ public class Util {
         public static byte[] obterArquivo(String nomeArquivo) throws FileNotFoundException {
 
             System.out.println("isExternalStorageReadable: " + isExternalStorageReadable());
-            if(!isExternalStorageReadable()){
+            if (!isExternalStorageReadable()) {
                 //TODO: Abrir um dialog informando que o storage externo não está montado.
                 //pensar melhor e ver se vale a pena armazenar no storage interno e ver os cuidados a serem tomados
             }
 
             // Get the absolute path of External Storage Directory
-            File arquivo = new File(Constantes.CAMINHO_ARQUIVOS+nomeArquivo);
+            File arquivo = new File(Constantes.CAMINHO_ARQUIVOS + nomeArquivo);
 
             int tamanhoArquivoBytes = (int) arquivo.length();
             byte[] buffer = new byte[tamanhoArquivoBytes];

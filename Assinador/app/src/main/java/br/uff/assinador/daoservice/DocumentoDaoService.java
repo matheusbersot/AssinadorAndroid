@@ -26,13 +26,13 @@ public class DocumentoDaoService {
         this.usuarioDaoService = usuarioDaoService;
     }
 
-    public List<Documento> obterDocumentosPorUsuario(String cpf) throws Exception {
-        Usuario usuario = usuarioDaoService.obterUsuarioPorIdentificador(cpf);
+    public List<Documento> obterDocumentosPorUsuario(String identificadorUsuario) throws Exception {
+        Usuario usuario = usuarioDaoService.obterUsuarioPorIdentificador(identificadorUsuario);
         return documentoDao._queryUsuario_Documentos(usuario.getId());
     }
 
-    public void adicionarDocumentoPorUsuario(String cpf) throws Exception {
-        Usuario usuario = usuarioDaoService.obterUsuarioPorIdentificador(cpf);
+    public void adicionarDocumentoPorUsuario(String identificadorUsuario) throws Exception {
+        Usuario usuario = usuarioDaoService.obterUsuarioPorIdentificador(identificadorUsuario);
         byte[] dadosDocumento = Util.Armazenamento.obterArquivo("teste2.doc");
 
         Documento doc = new Documento(null, "teste2.doc", "application/msword", "teste2 doc", dadosDocumento, null, null,

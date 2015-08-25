@@ -6,6 +6,7 @@ import br.uff.assinador.daoservice.DocumentoDaoService;
 import br.uff.assinador.daoservice.UsuarioDaoService;
 import br.uff.assinador.di.module.ApplicationModule;
 import br.uff.assinador.visao.activity.MainActivity;
+import br.uff.assinador.visao.presenter.MainPresenter;
 import dagger.Component;
 
 /**
@@ -17,6 +18,7 @@ public interface ApplicationComponent {
 
     //método usado para definir classes que possuem campos anotados com @Inject para serem injetados
     void inject(MainActivity activity);
+    void inject(MainPresenter mainPresenter);
 
     UsuarioDaoService getUsuarioDaoService();
     DocumentoDaoService getDocumentoDaoService();
