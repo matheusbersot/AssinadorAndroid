@@ -46,7 +46,7 @@ public class DocumentoArrayAdapter extends ArrayAdapter<Documento> {
         //define o nome do documento
         nomeDocumentoView.setText(listaDocumentos.get(position).getNome());
         //define a descrição do documento
-        descricaoDocumentoView.setText(listaDocumentos.get(position).getTipo());
+        descricaoDocumentoView.setText(listaDocumentos.get(position).getDescricao());
         //define a ícone para o documento
         imageView.setImageResource(R.mipmap.ic_launcher);
 

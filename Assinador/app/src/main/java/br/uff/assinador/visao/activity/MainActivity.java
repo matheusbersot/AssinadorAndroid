@@ -1,8 +1,12 @@
 package br.uff.assinador.visao.activity;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.List;
@@ -14,6 +18,7 @@ import br.uff.assinador.R;
 import br.uff.assinador.daoservice.DocumentoDaoService;
 import br.uff.assinador.daoservice.UsuarioDaoService;
 import br.uff.assinador.modelo.Documento;
+import br.uff.assinador.util.Util;
 import br.uff.assinador.visao.adapter.DocumentoArrayAdapter;
 
 
@@ -48,27 +53,31 @@ public class MainActivity extends BaseActivity {
         final DocumentoArrayAdapter adapter = new DocumentoArrayAdapter(this,R.layout.item_doc_lista_layout,listaDocumentos);
         listview.setAdapter(adapter);
 
-        /*
+
         //Define evento de clique em um item da lista
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
-            public void onItemClick(AdapterView<?> parent, final View view,
-                                    int position, long id) {
-                final String item = (String) parent.getItemAtPosition(position);
-                view.animate().setDuration(2000).alpha(0)
-                        .withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                list.remove(item);
-                                adapter.notifyDataSetChanged();
-                                view.setAlpha(1);
-                            }
-                        });
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+
+                //obtém o documento escolhido
+                final Documento item = (Documento) parent.getItemAtPosition(position);
+
+                //grava o arquivo temporariamente no storage externo
+                Util.Armazenamento.criarArquivo(item.getNome(), item.getArquivo());
+
+                //Obtém URI do arquivo
+                Uri uriArquivo =  Util.Armazenamento.obterUriArquivo(item.getNome());
+
+                //Visualiza qualquer tipo de arquivo, pois será indicado pelo android um programa para abrir o arquivo
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(uriArquivo, item.getTipo());
+                startActivity(intent);
             }
 
-        });*/
+        });
 
     }
 

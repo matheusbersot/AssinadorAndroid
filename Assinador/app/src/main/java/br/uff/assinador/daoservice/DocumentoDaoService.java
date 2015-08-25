@@ -33,9 +33,9 @@ public class DocumentoDaoService {
 
     public void adicionarDocumentoPorUsuario(String cpf) throws Exception {
         Usuario usuario = usuarioDaoService.obterUsuarioPorIdentificador(cpf);
-        byte[] dadosDocumento = Util.Armazenamento.obterArquivo("teste.pdf");
+        byte[] dadosDocumento = Util.Armazenamento.obterArquivo("teste2.doc");
 
-        Documento doc = new Documento(null, "teste", "teste doc", "application/pdf", dadosDocumento, null, null,
+        Documento doc = new Documento(null, "teste2.doc", "application/msword", "teste2 doc", dadosDocumento, null, null,
                 new Date(), Long.decode("1"));
         documentoDao.insert(doc);
         Log.d("DocumentoDaoService", "Inseriu novo documento, ID: " + doc.getId());
