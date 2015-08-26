@@ -1,11 +1,15 @@
 package br.uff.assinador.visao.activity;
 
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -32,6 +36,9 @@ public class MainActivity extends BaseActivity implements IMainView {
     DocumentoDaoService documentoDaoService;
 
     MainPresenter mainPresenter;
+    Menu menu;
+    ListView listView;
+    DocumentoArrayAdapter listViewAdapter;
 
     private static final String TAG = MainActivity.class.getName();
 
@@ -45,14 +52,110 @@ public class MainActivity extends BaseActivity implements IMainView {
         mainPresenter = new MainPresenter(this);
         this.getApplicationComponent().inject(mainPresenter);
 
-        //Preenche listView com documentos
+        //obtém listView
+        this.listView = (ListView) findViewById(R.id.listView);
+
+        //preenche listView com documentos
         mainPresenter.preencherListaDocumentos("11232299707");
+
+
+        listView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+
+                // captura o número total de itens selecionados
+                final int checkedCount = listView.getCheckedItemCount();
+
+                // Define o título da contextual action bar(CAB) de acordo com o número de itens selecionados
+                if(checkedCount == 1){
+                    mode.setTitle(checkedCount + " Selecionado");
+                }else if(checkedCount > 1){
+                    mode.setTitle(checkedCount + " Selecionados");
+                }
+
+                //marcar seleção de um documento no adapter
+                listViewAdapter.trocarSelecao(position);
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+
+                switch (item.getItemId()) {
+
+                    case R.id.action_delete:
+
+                        /*SparseBooleanArray idsSelecionados = listViewAdapter.obterIdsSelecionados();
+
+                        for (int i = 0; i < idsSelecionados.size(); ++i) {
+
+                            if (idsSelecionados.valueAt(i)) {
+
+                                Documento selecteditem = listViewAdapter.getItem(idsSelecionados.keyAt(i));
+
+                                // Remove itens selecionados com os seguintes ids
+                                listViewAdapter.remove(selecteditem);
+                            }
+                        }
+                        // Close CAB
+                        mode.finish();*/
+                        return true;
+                    case R.id.action_sign:
+                        return true;
+                    case R.id.action_validate:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                mode.getMenuInflater().inflate(R.menu.menu_itens_selecionados, menu);
+                return true;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                listViewAdapter.removerSelecao();
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+        });
+
+        //Define evento de clique em um item da lista
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+
+                //obtém o documento escolhido
+                final Documento item = (Documento) parent.getItemAtPosition(position);
+
+                //grava o arquivo temporariamente no storage externo
+                Util.Armazenamento.criarArquivo(getExternalFilesDir(null), item.getNome(), item.getArquivo());
+
+                //Obtém URI do arquivo
+                Uri uriArquivo = Util.Armazenamento.obterUriArquivo(getExternalFilesDir(null), item.getNome());
+
+                //Visualiza qualquer tipo de arquivo, pois será indicado pelo android um programa para abrir o arquivo
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(uriArquivo, item.getTipo());
+                startActivity(intent);
+            }
+
+        });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        this.menu = menu;
         return true;
     }
 
@@ -103,37 +206,9 @@ public class MainActivity extends BaseActivity implements IMainView {
     @Override
     public void setListaDocumentos(List<Documento> listaDocumentos) {
 
-        //obtém componente ListView da interface
-        final ListView listview = (ListView) findViewById(R.id.listView);
-
         // define um adapter para esse componente
         // através do adapter é que os documentos serão inseridos no componente ListView
-        final DocumentoArrayAdapter adapter = new DocumentoArrayAdapter(this, R.layout.item_doc_lista_layout,listaDocumentos);
-        listview.setAdapter(adapter);
-
-        //Define evento de clique em um item da lista
-        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-
-                //obtém o documento escolhido
-                final Documento item = (Documento) parent.getItemAtPosition(position);
-
-                //grava o arquivo temporariamente no storage externo
-                Util.Armazenamento.criarArquivo(getExternalFilesDir(null),item.getNome(), item.getArquivo());
-
-                //Obtém URI do arquivo
-                Uri uriArquivo = Util.Armazenamento.obterUriArquivo(getExternalFilesDir(null),item.getNome());
-
-                //Visualiza qualquer tipo de arquivo, pois será indicado pelo android um programa para abrir o arquivo
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(uriArquivo, item.getTipo());
-                startActivity(intent);
-            }
-
-        });
-
+        this.listViewAdapter = new DocumentoArrayAdapter(this, R.layout.item_doc_lista_layout, listaDocumentos);
+        listView.setAdapter(listViewAdapter);
     }
 }

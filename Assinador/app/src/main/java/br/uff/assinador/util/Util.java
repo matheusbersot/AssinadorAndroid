@@ -1,5 +1,6 @@
 package br.uff.assinador.util;
 
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Environment;
 
@@ -17,6 +18,7 @@ public class Util {
     public static class Constantes {
         public static final String MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
         public static final String CAMINHO_ARQUIVOS = "/storage/extSdCard/";
+        public static final int COR_SELECAO_ITEM_LISTA = Color.RED;
     }
 
     public static class Armazenamento {
