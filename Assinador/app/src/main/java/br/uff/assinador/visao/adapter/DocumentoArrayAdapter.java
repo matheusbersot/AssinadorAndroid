@@ -86,4 +86,28 @@ public class DocumentoArrayAdapter extends ArrayAdapter<Documento> {
     public SparseBooleanArray obterIdsSelecionados() {
         return mIdsItensSelecionados;
     }
+
+    public boolean itensSelecionadosEstaoAssinados() {
+        int tamanho = mIdsItensSelecionados.size();
+        for (int i = 0; i < tamanho; ++i) {
+            int posicao = mIdsItensSelecionados.keyAt(i);
+            Documento doc = mListaDocumentos.get(posicao);
+            if (doc.getAssinatura() == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean itensSelecionadosNaoEstaoAssinados() {
+        int tamanho = mIdsItensSelecionados.size();
+        for (int i = 0; i < tamanho; ++i) {
+            int posicao = mIdsItensSelecionados.keyAt(i);
+            Documento doc = mListaDocumentos.get(posicao);
+            if (doc.getAssinatura() != null) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

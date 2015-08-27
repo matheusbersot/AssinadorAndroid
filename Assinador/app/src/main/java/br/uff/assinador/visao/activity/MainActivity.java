@@ -36,7 +36,7 @@ public class MainActivity extends BaseActivity implements IMainView {
     DocumentoDaoService documentoDaoService;
 
     MainPresenter mainPresenter;
-    Menu menu;
+    Menu mainMenu;
     ListView listView;
     DocumentoArrayAdapter listViewAdapter;
 
@@ -58,8 +58,33 @@ public class MainActivity extends BaseActivity implements IMainView {
         //preenche listView com documentos
         mainPresenter.preencherListaDocumentos("11232299707");
 
+        //Define evento de clique em um item da lista
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+
+                //obtém o documento escolhido
+                final Documento item = (Documento) parent.getItemAtPosition(position);
+
+                //grava o arquivo temporariamente no storage externo
+                Util.Armazenamento.criarArquivo(getExternalFilesDir(null), item.getNome(), item.getArquivo());
+
+                //Obtém URI do arquivo
+                Uri uriArquivo = Util.Armazenamento.obterUriArquivo(getExternalFilesDir(null), item.getNome());
+
+                //Visualiza qualquer tipo de arquivo, pois será indicado pelo android um programa para abrir o arquivo
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(uriArquivo, item.getTipo());
+                startActivity(intent);
+            }
+        });
+
 
         listView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
+            private Menu menuItensSelecionados;
 
             @Override
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
@@ -68,14 +93,17 @@ public class MainActivity extends BaseActivity implements IMainView {
                 final int checkedCount = listView.getCheckedItemCount();
 
                 // Define o título da contextual action bar(CAB) de acordo com o número de itens selecionados
-                if(checkedCount == 1){
+                if (checkedCount == 1) {
                     mode.setTitle(checkedCount + " Selecionado");
-                }else if(checkedCount > 1){
+                } else if (checkedCount > 1) {
                     mode.setTitle(checkedCount + " Selecionados");
                 }
 
                 //marcar seleção de um documento no adapter
                 listViewAdapter.trocarSelecao(position);
+
+                //modificar actionbar de acordo com o status do documento selecionado (assinado ou não)
+                definirBotoesActionBar();
             }
 
             @Override
@@ -111,6 +139,7 @@ public class MainActivity extends BaseActivity implements IMainView {
 
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                this.menuItensSelecionados = menu;
                 mode.getMenuInflater().inflate(R.menu.menu_itens_selecionados, menu);
                 return true;
             }
@@ -124,30 +153,20 @@ public class MainActivity extends BaseActivity implements IMainView {
             public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
                 return false;
             }
-        });
 
-        //Define evento de clique em um item da lista
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-
-                //obtém o documento escolhido
-                final Documento item = (Documento) parent.getItemAtPosition(position);
-
-                //grava o arquivo temporariamente no storage externo
-                Util.Armazenamento.criarArquivo(getExternalFilesDir(null), item.getNome(), item.getArquivo());
-
-                //Obtém URI do arquivo
-                Uri uriArquivo = Util.Armazenamento.obterUriArquivo(getExternalFilesDir(null), item.getNome());
-
-                //Visualiza qualquer tipo de arquivo, pois será indicado pelo android um programa para abrir o arquivo
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(uriArquivo, item.getTipo());
-                startActivity(intent);
+            public void definirBotoesActionBar()
+            {
+                if(listViewAdapter.itensSelecionadosEstaoAssinados()) // mostrar botão de validar
+                {
+                    MenuItem btnValidar = this.menuItensSelecionados.findItem(R.id.action_validate);
+                    btnValidar.setVisible(true);
+                }
+                else if (listViewAdapter.itensSelecionadosNaoEstaoAssinados())// mostrar botão de assinatura
+                {
+                    MenuItem btnAssinar = this.menuItensSelecionados.findItem(R.id.action_sign);
+                    btnAssinar.setVisible(true);
+                }
             }
-
         });
     }
 
@@ -155,7 +174,7 @@ public class MainActivity extends BaseActivity implements IMainView {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
-        this.menu = menu;
+        this.mainMenu = menu;
         return true;
     }
 
