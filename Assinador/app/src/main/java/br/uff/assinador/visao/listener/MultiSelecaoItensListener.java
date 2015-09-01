@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 import br.uff.assinador.R;
 import br.uff.assinador.asyncTask.AssinarDocumentoTask;
+import br.uff.assinador.asyncTask.ValidarDocumentoTask;
 import br.uff.assinador.daoservice.DocumentoDaoService;
 import br.uff.assinador.modelo.Documento;
 import br.uff.assinador.util.Constantes;
@@ -90,6 +91,8 @@ public class MultiSelecaoItensListener implements AbsListView.MultiChoiceModeLis
                 });
                 return true;
             case R.id.action_validate:
+                validarDocumentos();
+                mode.finish(); // Fecha o CAB (contextual action bar)
                 return true;
             default:
                 return false;
@@ -202,4 +205,15 @@ public class MultiSelecaoItensListener implements AbsListView.MultiChoiceModeLis
 
         return deferred.promise();
     }
+
+    private void validarDocumentos() {
+        ValidarDocumentoTask validarDocumentoTask = new ValidarDocumentoTask(parentActivity, listViewAdapter);
+        validarDocumentoTask.execute();
+        try{
+            validarDocumentoTask.get();
+        }catch (Exception e){
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
 }

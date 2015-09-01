@@ -54,7 +54,6 @@ public class AssinarDocumentoTask extends AsyncTask<Object, Integer, Boolean> {
     private Activity activity;
     DocumentoArrayAdapter listViewAdapter;
     //private ProgressDialog progressDialog;
-    private Exception error;
     private final String TAG = AssinarDocumentoTask.class.getSimpleName();
 
     public AssinarDocumentoTask(Activity activity, DocumentoArrayAdapter listViewAdapter) {

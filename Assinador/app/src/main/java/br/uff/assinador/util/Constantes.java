@@ -10,6 +10,8 @@ public class Constantes {
     //Constantes relacionadas ao processo de assinatura digital
     public static final String BOUNCY_CASTLE_PROVIDER = "BC";
     public static final String ALG_SHA1_WITH_RSA = "SHA1withRSA";
+    public static final String ALG_HASH_SHA1 = "SHA1";
+    public static final String OID_ALG_HASH_SHA1 = "1.3.14.3.2.26";
     public static final String TIPO_CHAVE_RSA = "RSA";
     public static final String TIPO_CHAVE_DSA = "DSA";
 
