@@ -1,115 +1,70 @@
 package br.uff.assinador.util;
 
+import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Environment;
+import android.view.ActionMode;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.Principal;
 
 /**
  * Created by matheus on 21/08/15.
  */
 public class Util {
 
-    public static class Constantes {
-        public static final String MSG_USUARIO_NAO_ENCONTRADO = "Usuário não encontrado.";
-        public static final String CAMINHO_ARQUIVOS = "/storage/extSdCard/";
-        public static final int COR_SELECAO_ITEM_LISTA = Color.RED;
+    public static void showToast(Context ctx, String msg) {
+        Toast.makeText(ctx, msg, Toast.LENGTH_SHORT).show();
     }
 
-    public static class Armazenamento {
+    public static void showLongToast(Context ctx, String msg) {
+        Toast.makeText(ctx, msg, Toast.LENGTH_LONG).show();
+    }
 
-        /* Verifica se o armazenamento externo está disponível pelo menos para leitura*/
-        public static boolean isExternalStorageReadable() {
-            String state = Environment.getExternalStorageState();
-            if (Environment.MEDIA_MOUNTED.equals(state) ||
-                    Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-                return true;
+    public static void showToastOnUIThread(final Activity act, final String msg, final boolean longToast) {
+        act.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (longToast)
+                    showLongToast(act, msg);
+                else
+                    showToast(act, msg);
             }
-            return false;
-        }
+        });
+    }
 
-        /* Verifica se o armazenamento externo está disponível para escrita*/
-        public static boolean isExternalStorageWritable() {
-            String state = Environment.getExternalStorageState();
-            if (Environment.MEDIA_MOUNTED.equals(state)) {
-                return true;
+    public static void closeContextualActionBar(final Activity act, final ActionMode mode)
+    {
+        act.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mode.finish();  // Fecha o CAB (contextual action bar)
             }
-            return false;
-        }
+        });
+    }
 
-        public static Uri obterUriArquivo(File caminho, String nomeArquivo) {
-            File arquivo = new File(caminho,nomeArquivo);
-            Uri uri = Uri.fromFile(arquivo);
-            return uri;
-        }
+    public static class Certificado {
 
-        public static void criarArquivo(File caminho, String nomeArquivo, byte[] dados) {
-            System.out.println("isExternalStorageWritable: " + isExternalStorageWritable());
+        private static Principal[] listaEmissoresPermitidos;
 
-            if (!isExternalStorageWritable()) {
-                //TODO: Abrir um dialog informando que o storage externo não está montado.
-                //pensar melhor e ver se vale a pena armazenar no storage interno e ver os cuidados a serem tomados
-            }
+        public static Principal[] obterListaEmissoresPermitidos() {
 
-            File arquivo = new File(caminho,nomeArquivo);
+            if (listaEmissoresPermitidos == null) {
 
-            // se arquivo não existir, então cria ele
-            FileOutputStream out = null;
-            if (!arquivo.exists()) {
-                try {
-                    arquivo.createNewFile();
-                    out = new FileOutputStream(arquivo);
-                    out.write(dados);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (out != null) {
-                        try {
-                            out.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-
-        public static byte[] obterArquivo(String nomeArquivo) throws FileNotFoundException {
-
-            System.out.println("isExternalStorageReadable: " + isExternalStorageReadable());
-            if (!isExternalStorageReadable()) {
-                //TODO: Abrir um dialog informando que o storage externo não está montado.
-                //pensar melhor e ver se vale a pena armazenar no storage interno e ver os cuidados a serem tomados
+                listaEmissoresPermitidos = new Principal[3];
+                listaEmissoresPermitidos[0] = CertificadoACEnum.AC_RAIZ_ICPEDU_V2.getDonoCertificado();
+                listaEmissoresPermitidos[1] = CertificadoACEnum.AC_PESSOAS_P1.getDonoCertificado();
+                listaEmissoresPermitidos[2] = CertificadoACEnum.AC_PESSOAS_P5.getDonoCertificado();
             }
 
-            // Get the absolute path of External Storage Directory
-            File arquivo = new File(Constantes.CAMINHO_ARQUIVOS + nomeArquivo);
-
-            int tamanhoArquivoBytes = (int) arquivo.length();
-            byte[] buffer = new byte[tamanhoArquivoBytes];
-
-            FileInputStream in = null;
-            try {
-                in = new FileInputStream(arquivo);
-                in.read(buffer);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            return buffer;
+            return listaEmissoresPermitidos;
         }
     }
 

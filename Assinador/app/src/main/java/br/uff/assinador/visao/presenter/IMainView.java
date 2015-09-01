@@ -13,4 +13,6 @@ import br.uff.assinador.modelo.Documento;
 public interface IMainView {
 
     public void setListaDocumentos(List<Documento> listaDocumentos);
+
+    public void atualizarListaDocumentos(List<Documento> listaDocumentos);
 }

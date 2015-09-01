@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import br.uff.assinador.dao.UsuarioDao;
 import br.uff.assinador.modelo.Usuario;
+import br.uff.assinador.util.Constantes;
 import br.uff.assinador.util.Util;
 
 /**
@@ -25,7 +26,7 @@ public class UsuarioDaoService {
     public Usuario obterUsuarioPorIdentificador(String identificadorUsuario) throws Exception {
         List<Usuario> lista = usuarioDao.queryBuilder().where(UsuarioDao.Properties.Cpf.eq(identificadorUsuario)).list();
         if(lista.isEmpty()) {
-            throw new Exception(Util.Constantes.MSG_USUARIO_NAO_ENCONTRADO);
+            throw new Exception(Constantes.MSG_USUARIO_NAO_ENCONTRADO);
         }
 
         return lista.get(0);

@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import br.uff.assinador.R;
@@ -57,8 +58,8 @@ public class DocumentoArrayAdapter extends ArrayAdapter<Documento> {
     }
 
     @Override
-    public void remove(Documento object) {
-        mListaDocumentos.remove(object);
+    public void remove(Documento doc) {
+        mListaDocumentos.remove(doc);
         notifyDataSetChanged();
     }
 
@@ -109,5 +110,24 @@ public class DocumentoArrayAdapter extends ArrayAdapter<Documento> {
             }
         }
         return true;
+    }
+
+    public List<Documento> obterListaDocumentosSelecionados()
+    {
+        List<Documento> lista = new ArrayList<Documento>();
+        int tamanho = mIdsItensSelecionados.size();
+        for (int i = 0; i < tamanho; ++i) {
+            int posicao = mIdsItensSelecionados.keyAt(i);
+            lista.add(mListaDocumentos.get(posicao));
+        }
+        return lista;
+    }
+
+    public void atualizarDados(List<Documento> listaDocumentos)
+    {
+        removerSelecao();
+        clear(); // remove todos os elementos da lista, no caso mListaDocumentos
+        addAll(listaDocumentos);
+        notifyDataSetChanged();
     }
 }

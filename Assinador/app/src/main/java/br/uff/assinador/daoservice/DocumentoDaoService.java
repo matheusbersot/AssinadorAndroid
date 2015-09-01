@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import br.uff.assinador.dao.DocumentoDao;
 import br.uff.assinador.modelo.Documento;
 import br.uff.assinador.modelo.Usuario;
+import br.uff.assinador.util.Armazenamento;
 import br.uff.assinador.util.Util;
 
 /**
@@ -33,11 +34,21 @@ public class DocumentoDaoService {
 
     public void adicionarDocumentoPorUsuario(String identificadorUsuario) throws Exception {
         Usuario usuario = usuarioDaoService.obterUsuarioPorIdentificador(identificadorUsuario);
-        byte[] dadosDocumento = Util.Armazenamento.obterArquivo("teste2.doc");
+        byte[] dadosDocumento = Armazenamento.obterArquivo("teste2.doc");
 
         Documento doc = new Documento(null, "teste2.doc", "application/msword", "teste2 doc", dadosDocumento, null, null,
                 new Date(), Long.decode("1"));
         documentoDao.insert(doc);
         Log.d("DocumentoDaoService", "Inseriu novo documento, ID: " + doc.getId());
+    }
+
+    public void salvarDocumentos(List<Documento> listaDocumentos)
+    {
+        documentoDao.insertOrReplaceInTx(listaDocumentos);
+    }
+
+    public void removerDocumento(Documento documento)
+    {
+        documentoDao.delete(documento);
     }
 }

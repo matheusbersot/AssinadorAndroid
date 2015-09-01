@@ -2,6 +2,7 @@ package br.uff.assinador.visao.presenter;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -29,18 +30,38 @@ public class MainPresenter {
     @Inject
     protected DocumentoDaoService documentoDaoService;
 
+    private final String TAG = MainPresenter.class.getSimpleName();
+
     public MainPresenter(IMainView view) {
         mainView = view;
     }
 
-    public void preencherListaDocumentos(String identificadorUsuario)
+    private List<Documento> obterDocumentosPorUsuario(String identificadorUsuario)
     {
         List<Documento> listaDocumentos = null;
         try {
             listaDocumentos = documentoDaoService.obterDocumentosPorUsuario(identificadorUsuario);
         } catch (Exception e) {
+            Log.e(TAG, "Exceção: Erro ao obter documentos do usuário com Identificador " + identificadorUsuario);
+        }
+        return listaDocumentos;
+    }
+
+    public void preencherListaDocumentos(String identificadorUsuario)
+    {
+        List<Documento> lista = obterDocumentosPorUsuario(identificadorUsuario);
+        if(lista == null) {
             usuarioDaoService.adicionarUsuario("11232299707");
         }
-        mainView.setListaDocumentos(listaDocumentos);
+        mainView.setListaDocumentos(lista);
+    }
+
+    public void atualizarListaDocumentos(String identificadorUsuario)
+    {
+        List<Documento> lista = obterDocumentosPorUsuario(identificadorUsuario);
+        if(lista == null) {
+            usuarioDaoService.adicionarUsuario("11232299707");
+        }
+        mainView.atualizarListaDocumentos(lista);
     }
 }
