@@ -123,7 +123,13 @@ public class MultiSelecaoItensListener implements AbsListView.MultiChoiceModeLis
         {
             MenuItem btnAssinar = this.menuItensSelecionados.findItem(R.id.action_sign);
             btnAssinar.setVisible(true);
+        } else {
+            MenuItem btnValidar = this.menuItensSelecionados.findItem(R.id.action_validate);
+            btnValidar.setVisible(false);
+            MenuItem btnAssinar = this.menuItensSelecionados.findItem(R.id.action_sign);
+            btnAssinar.setVisible(false);
         }
+
     }
 
     private void deletarDocumentos() {

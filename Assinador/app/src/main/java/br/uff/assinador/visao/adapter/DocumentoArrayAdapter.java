@@ -1,6 +1,7 @@
 package br.uff.assinador.visao.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,12 +48,19 @@ public class DocumentoArrayAdapter extends ArrayAdapter<Documento> {
         TextView descricaoDocumentoView = (TextView) rowView.findViewById(R.id.secondLine);
         ImageView imageView = (ImageView) rowView.findViewById(R.id.icon);
 
+
+        Documento doc = mListaDocumentos.get(position);
         //define o nome do documento
-        nomeDocumentoView.setText(mListaDocumentos.get(position).getNome());
+        nomeDocumentoView.setText(doc.getNome());
         //define a descrição do documento
-        descricaoDocumentoView.setText(mListaDocumentos.get(position).getDescricao());
+        descricaoDocumentoView.setText(doc.getDescricao());
         //define a ícone para o documento
         imageView.setImageResource(R.mipmap.ic_launcher);
+
+        //muda a cor de fundo do item para indicar que já foi assinado
+        if(doc.getAssinatura() != null){
+            rowView.setBackgroundColor(Color.GREEN);
+        }
 
         return rowView;
     }
