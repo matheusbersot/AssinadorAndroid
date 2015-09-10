@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 import br.uff.assinador.R;
 import br.uff.assinador.asyncTask.AssinarDocumentoTask;
+import br.uff.assinador.asyncTask.Resultado;
 import br.uff.assinador.asyncTask.ValidarDocumentoTask;
 import br.uff.assinador.daoservice.DocumentoDaoService;
 import br.uff.assinador.modelo.Documento;
@@ -81,7 +82,7 @@ public class MultiSelecaoItensListener implements AbsListView.MultiChoiceModeLis
                 mode.finish(); // Fecha o CAB (contextual action bar)
                 return true;
             case R.id.action_sign:
-                Promise p = assinarDocumentos();
+                Promise p = executarProcessoAssinaturaDigital();
                 //fecha o CAB independente de ter tido erro ou não
                 p.always(new AlwaysCallback() {
                     @Override
@@ -148,7 +149,7 @@ public class MultiSelecaoItensListener implements AbsListView.MultiChoiceModeLis
         }
     }
 
-    private Promise assinarDocumentos() {
+    private Promise executarProcessoAssinaturaDigital() {
 
         final Deferred deferred = new DeferredObject();
 
@@ -163,36 +164,45 @@ public class MultiSelecaoItensListener implements AbsListView.MultiChoiceModeLis
                             params[0] = parentActivity;
                             params[1] = alias;
 
-                            //Executa tarefa assíncrona de assinatura
-                            AssinarDocumentoTask assinarDocumentoTask = new AssinarDocumentoTask(parentActivity, listViewAdapter);
-                            assinarDocumentoTask.execute(params);
-                            Boolean assinouTudo = false;
-                            try {
-                                assinouTudo = assinarDocumentoTask.get();
-                                if (assinouTudo) {
-                                    //TODO: pensar uma forma atômica de fazer isso
+                            String mensagem = "";
 
-                                    //persistir assinatura no banco de dados
-                                    List<Documento> listaDocumentoSelecionados = listViewAdapter.obterListaDocumentosSelecionados();
-                                    documentoDaoService.salvarDocumentos(listaDocumentoSelecionados);
+                            //assina documentos
+                            boolean assinouTudo = assinarDocumentos(params);
 
-                                    //TODO: enviar para servidor
+                            //valida assinatura e cadeia de certificados
+                            boolean validouTudo = validarDocumentos();
 
-                                    if (listaDocumentoSelecionados.size() == 1)
-                                        Util.showToastOnUIThread(parentActivity, "O documento foi assinado com sucesso.", false);
-                                    else
-                                        Util.showToastOnUIThread(parentActivity, "Os documentos foram assinados com sucesso.", false);
+                            if(assinouTudo && validouTudo)
+                            {
+                                //TODO: pensar uma forma atômica de fazer isso
 
-                                    deferred.resolve(assinouTudo);
+                                //persistir assinatura no banco de dados
+                                List<Documento> listaDocumentoSelecionados = listViewAdapter.obterListaDocumentosSelecionados();
+                                documentoDaoService.salvarDocumentos(listaDocumentoSelecionados);
 
-                                } else {
-                                    Util.showToastOnUIThread(parentActivity, "Ocorreu um erro no processo de assinatura de documento.", false);
-                                    deferred.reject(assinouTudo);
-                                }
+                                //TODO: enviar para servidor
 
-                            } catch (Exception e) {
-                                Log.e(TAG, e.getMessage());
-                                deferred.reject(assinouTudo);
+                                if (listaDocumentoSelecionados.size() == 1)
+                                    mensagem = "O documento foi assinado com sucesso.";
+                                else
+                                    mensagem = "Os documentos foram assinados com sucesso.";
+
+                                Util.showToastOnUIThread(parentActivity, mensagem , false);
+
+                                deferred.resolve(assinouTudo && validouTudo);
+                            }
+                            else
+                            {
+                                listViewAdapter.removerAssinaturasDocumentosSelecionados();
+
+                                if (listViewAdapter.obterNumeroItensSelecionados() == 1)
+                                    mensagem = "Ocorreu um erro no processo de assinatura de documento.";
+                                else
+                                    mensagem = "Ocorreu um erro no processo de assinatura dos documentos.";
+
+                                Util.showErrorAlertDialogOnUiThread(parentActivity, mensagem);
+
+                                deferred.reject(assinouTudo && validouTudo);
                             }
                         }
                     }
@@ -206,13 +216,36 @@ public class MultiSelecaoItensListener implements AbsListView.MultiChoiceModeLis
         return deferred.promise();
     }
 
-    private void validarDocumentos() {
+    //Executa tarefa assíncrona de assinatura
+    private boolean assinarDocumentos(Object[] params)
+    {
+        AssinarDocumentoTask assinarDocumentoTask = new AssinarDocumentoTask(parentActivity, listViewAdapter);
+        assinarDocumentoTask.execute(params);
+        try {
+            return assinarDocumentoTask.get();
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+            return false;
+        }
+    }
+
+    //Executa tarefa assíncrona de validação da assinatura e da cadeia de certificados
+    private boolean validarDocumentos() {
         ValidarDocumentoTask validarDocumentoTask = new ValidarDocumentoTask(parentActivity, listViewAdapter);
         validarDocumentoTask.execute();
+
+        Resultado<Boolean> resultado;
         try{
-            validarDocumentoTask.get();
+            resultado = validarDocumentoTask.get();
+            if(resultado.getException()!= null){
+                throw resultado.getException();
+            }
+            else{
+              return resultado.get();
+            }
         }catch (Exception e){
             Log.e(TAG, e.getMessage());
+            return false;
         }
     }
 

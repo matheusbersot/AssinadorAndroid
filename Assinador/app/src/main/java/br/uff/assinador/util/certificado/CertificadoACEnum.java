@@ -1,4 +1,4 @@
-package br.uff.assinador.util;
+package br.uff.assinador.util.certificado;
 
 /**
  * Created by matheus on 27/08/15.

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.spongycastle.asn1.ASN1ObjectIdentifier;
 import org.spongycastle.cert.X509CertificateHolder;
 import org.spongycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.spongycastle.cms.CMSSignedData;
@@ -12,10 +13,27 @@ import org.spongycastle.cms.SignerInformationStore;
 import org.spongycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.spongycastle.util.Store;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.Security;
-import java.security.cert.CertStore;
+import java.security.cert.CRLException;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.PKIXCertPathValidatorResult;
+import java.security.cert.PKIXParameters;
+import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,13 +42,13 @@ import java.util.Map;
 
 import br.uff.assinador.modelo.Documento;
 import br.uff.assinador.util.Constantes;
-import br.uff.assinador.util.Util;
+import br.uff.assinador.util.certificado.CRLLocator;
 import br.uff.assinador.visao.adapter.DocumentoArrayAdapter;
 
 /**
  * Created by matheus on 01/09/15.
  */
-public class ValidarDocumentoTask extends AsyncTask<Void, Integer, Boolean> {
+public class ValidarDocumentoTask extends AsyncTask<Void, Integer, Resultado<Boolean>> {
 
 
     static {
@@ -51,15 +69,14 @@ public class ValidarDocumentoTask extends AsyncTask<Void, Integer, Boolean> {
     }
 
     @Override
-    protected Boolean doInBackground(Void... params) {
+    protected Resultado<Boolean> doInBackground(Void... params) {
 
-        //verificando assinatura
+        Resultado<Boolean> resultado = new Resultado<Boolean>();
         boolean valido = true;
 
         try {
 
             List<Documento> listaDocumentoSelecionados = listViewAdapter.obterListaDocumentosSelecionados();
-            String mensagemErro = "As assinaturas dos seguintes documentos não são válidas:\\n";
 
             for (int i = 0; i < listaDocumentoSelecionados.size(); ++i) {
 
@@ -71,7 +88,6 @@ public class ValidarDocumentoTask extends AsyncTask<Void, Integer, Boolean> {
                 CMSSignedData signedData = new CMSSignedData(map, doc.getAssinatura());
 
                 Store certStore = signedData.getCertificates();
-                Store crlStore = signedData.getCRLs();
 
                 SignerInformationStore signerStore = signedData.getSignerInfos();
                 Collection c = signerStore.getSigners();
@@ -87,48 +103,79 @@ public class ValidarDocumentoTask extends AsyncTask<Void, Integer, Boolean> {
                     X509Certificate certFromSignedData = new JcaX509CertificateConverter().
                             setProvider(Constantes.BOUNCY_CASTLE_PROVIDER).getCertificate(certHolder);
 
+                    //validar assinatura para o documento corrente
                     if (signer.verify(new JcaSimpleSignerInfoVerifierBuilder().
                             setProvider(Constantes.BOUNCY_CASTLE_PROVIDER).build(certFromSignedData))) {
                         valido = valido && true;
                     } else {
                         valido = valido && false;
-                        mensagemErro += "- "+ doc.getNome() + "\\n";
                     }
+
+                    //validar a cadeia de certificados
+                    //nesse processo, já se verifica se o certificado não foi revogado
+                    valido = valido && verifyCertificateChain(certFromSignedData);
+
+                    // verifica se o certificado do usuário foi revogado
+                    // note que não é feita verificação na cadeia de certificados,
+                    // pois algumas ACS não possuem extensão CRL
+                    valido = valido && verifyCertificateInCRL(certFromSignedData);
                 }
-
-
-                //TODO: validar certificado para ver se não está expirado (CRL)
-                //TODO: validar cadeia do certificado
-                //TODO: verificar se o CPF do certificado é do mesmo usuário que assinou
-
-                 /*   X509Certificate[] cadeiaTotal = montarCadeiaOrdenadaECompleta(certCollection);
-
-                    final X509ChainValidator cadeia = new X509ChainValidator(
-                            cadeiaTotal, /* trustedAnchors /new HashSet(
-                            FachadaDeCertificadosAC.getTrustAnchors()), null);
-                    cadeia.checkCRL(verificarLCRs);
-                    cadeia.validateChain(dtAssinatura);
-
-                    String s2 = cert.getSubjectDN().getName();
-                    s2 = obterNomeExibicao(s2);
-                    if (sCN.length() != 0)
-                        sCN += ", ";
-                    sCN += s2;
-
-                return sCN.length() == 0 ? null : sCN;*/
             }
+            resultado.set(valido);
 
-            if(valido){
-                Util.showToastOnUIThread(activity,"Todas as assinaturas dos documentos selecionados são válidas.",false);
-            }else{
-                Util.showToastOnUIThread(activity,mensagemErro,true);
-            }
-            return valido;
-        }catch (Exception e)
-        {
-            Log.e(TAG,e.getMessage());
-            Util.showToastOnUIThread(activity, "Ocorreu um erro no processo de validação!", false);
-            return false;
+        } catch (Exception e) {
+            resultado.setException(e);
+            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
         }
+
+        return resultado;
+    }
+
+    private boolean verifyCertificateInCRL(X509Certificate cert)
+            throws CRLException {
+
+        boolean isValid = true;
+
+        CRLLocator crlLocator = new CRLLocator(cert);
+        List<X509CRL> x509CRLList = crlLocator.getCRL();
+        for(X509CRL x509CRL: x509CRLList){
+            X509CRLEntry x509CRLEntry = x509CRL.getRevokedCertificate(cert);
+            if (x509CRLEntry != null) {
+                isValid = false;
+                break;
+            }
+        }
+        return isValid;
+    }
+
+    private boolean verifyCertificateChain(X509Certificate cert)
+            throws CertificateException, NoSuchAlgorithmException,
+            InvalidAlgorithmParameterException, NoSuchProviderException,
+            KeyStoreException, IOException, CertPathValidatorException {
+
+        boolean isValid = false;
+
+        CertificateFactory cf = CertificateFactory.getInstance(Constantes.X509_CERT_TYPE, Constantes.BOUNCY_CASTLE_PROVIDER);
+
+        List<X509Certificate> certList = new ArrayList<X509Certificate>();
+        certList.add(cert);
+        CertPath certPath = cf.generateCertPath(certList);
+
+        KeyStore keystore = KeyStore.getInstance(Constantes.ANDROID_CA_STORE);
+        keystore.load(null);
+        PKIXParameters params = new PKIXParameters(keystore);
+        params.setRevocationEnabled(false);
+
+        CertPathValidator certPathValidator =
+                CertPathValidator.getInstance(CertPathValidator.getDefaultType(), Constantes.BOUNCY_CASTLE_PROVIDER);
+
+
+        PKIXCertPathValidatorResult pkixCertPathValidatorResult =
+                (PKIXCertPathValidatorResult) certPathValidator.validate(certPath, params);
+        PublicKey subjectPublicKey = pkixCertPathValidatorResult.getPublicKey();
+        isValid = true;
+
+        return isValid;
     }
 }

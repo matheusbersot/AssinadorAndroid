@@ -138,4 +138,14 @@ public class DocumentoArrayAdapter extends ArrayAdapter<Documento> {
         addAll(listaDocumentos);
         notifyDataSetChanged();
     }
+
+    public void removerAssinaturasDocumentosSelecionados()
+    {
+        List<Documento> listaDocumentos = this.obterListaDocumentosSelecionados();
+        int tamanho = listaDocumentos.size();
+        for (int i = 0; i < tamanho; ++i) {
+            listaDocumentos.get(i).setAssinatura(null);
+            listaDocumentos.get(i).setTipo_assinatura(null);
+        }
+    }
 }

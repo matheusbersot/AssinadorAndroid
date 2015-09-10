@@ -7,6 +7,7 @@ import android.util.Log;
 import java.util.concurrent.ExecutionException;
 
 import br.uff.assinador.asyncTask.CreateDatabaseTask;
+import br.uff.assinador.asyncTask.Resultado;
 import br.uff.assinador.dao.DaoMaster;
 import br.uff.assinador.di.component.ApplicationComponent;
 import br.uff.assinador.di.component.DaggerApplicationComponent;
@@ -43,13 +44,18 @@ public class AndroidApp extends Application {
 
         try {
             //Espera se necessário para a computação completar e então retorna seu resultado.
-            db = databaseTask.get();
-            Log.i(TAG, "Criação do Banco de Dados: " + helper.getDatabaseName());
-            Log.i(TAG, "Caminho do Banco de Dados: " + db.getPath());
+            Resultado<SQLiteDatabase> resultado = databaseTask.get();
+            if(resultado.getException() != null){
+                //TODO: mostrar um diálogo com a mensagem de erro
+            }else{
+                db = resultado.get();
+                Log.i(TAG, "Criação do Banco de Dados: " + helper.getDatabaseName());
+                Log.i(TAG, "Caminho do Banco de Dados: " + db.getPath());
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
         }
 
         this.applicationComponent = DaggerApplicationComponent.builder()
